@@ -10,7 +10,8 @@ using UnityHelpers.GUI;
 public class DLLBuilderWindow : EditorWindow
 {
     private readonly ScriptsList _list = new ScriptsList();
-    private readonly DLLBuilder _builder = new DLLBuilder();
+    private readonly References _references = new References();
+    private readonly Defines _defines = new Defines();
 
     private string _path = "";
     private string _outputPath = "";
@@ -35,8 +36,8 @@ public class DLLBuilderWindow : EditorWindow
 
     private void OnEnable()
     {
-        _builder.References.Load();
-        _builder.Defines.Load();
+        _defines.Load();
+        _references.Load();
     }
 
     private void OnGUI()
@@ -136,7 +137,7 @@ public class DLLBuilderWindow : EditorWindow
                     }
                     if (GUILayout.Button("Build"))
                     {
-                        //var m = _builder.Compile(false, _mainDllName, _outputPath, _list.GetSources());
+                        Build();
                     }
                 }
                 
@@ -160,24 +161,24 @@ public class DLLBuilderWindow : EditorWindow
                 }
                 if (GUILayout.Button("add", EditorStyles.miniButtonRight, GUILayout.ExpandWidth(false)))
                 {
-                    _builder.References.Add(_newRefPath);
+                    _references.Add(_newRefPath);
                     _newRefPath = "";
                     GUI.FocusControl(null);
                 }
             }
 
-            GUILayout.Label(_builder.References.Count.ToString());
+            GUILayout.Label(_references.Count.ToString());
 
-            for (var i = 0; i < _builder.References.Count; i++)
+            for (var i = 0; i < _references.Count; i++)
             {
-                var name = _builder.References.Files[i].Name;
+                var name = _references.Files[i].Name;
                 using (new HorizontalBlock())
                 {
-                    _builder.References.Include[i] = EditorGUILayout.ToggleLeft(name, _builder.References.Include[i]);
+                    _references.Include[i] = EditorGUILayout.ToggleLeft(name, _references.Include[i]);
                     GUILayout.FlexibleSpace();
                     if (GUILayout.Button("x", EditorStyles.miniButtonRight, GUILayout.ExpandWidth(false)))
                     {
-                        _builder.References.Remove(i);
+                        _references.Remove(i);
                     }
                 }
             }
@@ -193,23 +194,32 @@ public class DLLBuilderWindow : EditorWindow
                 _newDefineName = EditorGUILayout.TextField(_newDefineName, GUILayout.ExpandWidth(true));
                 if (GUILayout.Button("add", EditorStyles.miniButton, GUILayout.ExpandWidth(false)))
                 {
-                    _builder.Defines.List.Add(_newDefineName);
+                    _defines.List.Add(_newDefineName);
                     _newDefineName = "";
                     GUI.FocusControl(null);
                 }
             }
-            for (var i = 0; i < _builder.Defines.List.Count; i++)
+            for (var i = 0; i < _defines.List.Count; i++)
             {
                 using (new HorizontalBlock())
                 {
-                    GUILayout.Label(_builder.Defines.List[i]);
+                    GUILayout.Label(_defines.List[i]);
                     if (GUILayout.Button("x", EditorStyles.miniButton, GUILayout.ExpandWidth(false)))
                     {
-                        _builder.Defines.List.RemoveAt(i);
+                        _defines.List.RemoveAt(i);
                     }
                 }
             }
 
         }
+    }
+
+    private void Build()
+    {
+        var path = PathUtils.UnixToWindowsPath(_outputPath);
+
+        var builder = new DLLBuilder(_outputPath, _mainDllName, _list, _references, _defines, _editorDll);
+        if (builder.Build(false) && builder.Build(true))
+            EditorUtility.DisplayDialog("Success", "Ready", "ok");
     }
 }

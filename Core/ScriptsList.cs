@@ -43,18 +43,13 @@ public class ScriptsList
         EditorFiles.ForEach(f => EditorFilesToInclude.Add(true));
     }
 
-    public void AddFile()
-    {
-        
-    }
-
     public string[] GetSources()
     {
-        return MainFiles.Select(f => File.ReadAllText(f.FullName)).ToArray();
+        return MainFiles.Select(f => f.FullName).ToArray();
     }
 
     public string[] GetEditorSources()
     {
-        return EditorFiles.Select(f => File.ReadAllText(f.FullName)).ToArray();
+        return EditorFiles.Select(f => f.FullName).ToArray();
     }
 }
