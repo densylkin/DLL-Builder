@@ -137,7 +137,8 @@ public class DLLBuilderWindow : EditorWindow
                     }
                     if (GUILayout.Button("Build"))
                     {
-                        Build();
+                        var e = Build();
+                        while (e.MoveNext()) ;
                     }
                 }
                 
@@ -214,12 +215,16 @@ public class DLLBuilderWindow : EditorWindow
         }
     }
 
-    private void Build()
+    private IEnumerator Build()
     {
         var path = PathUtils.UnixToWindowsPath(_outputPath);
 
         var builder = new DLLBuilder(_outputPath, _mainDllName, _list, _references, _defines, _editorDll);
-        if (builder.Build(false) && builder.Build(true))
-            EditorUtility.DisplayDialog("Success", "Ready", "ok");
+        if (builder.Build(false))
+        {
+            yield return new WaitForSeconds(1f);
+            if (builder.Build(true))
+                EditorUtility.DisplayDialog("Success", "Ready", "ok");
+        }
     }
 }

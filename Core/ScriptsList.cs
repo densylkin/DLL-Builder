@@ -45,11 +45,11 @@ public class ScriptsList
 
     public string[] GetSources()
     {
-        return MainFiles.Select(f => f.FullName).ToArray();
+        return MainFiles.Select(f => f.FullName.Replace(" ", "-")).ToArray();
     }
 
     public string[] GetEditorSources()
     {
-        return EditorFiles.Select(f => f.FullName).ToArray();
+        return EditorFiles.Select(f => f.FullName.Replace(" ", "-")).ToArray();
     }
 }

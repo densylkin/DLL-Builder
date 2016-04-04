@@ -18,7 +18,7 @@ public class DLLBuilder
     private readonly Defines _defines;
 
     private string MainDllPAth { get { return _path + "/" + _name + ".dll"; } }
-    private string EditorDllPath { get { return _path + "/" + _name + "_Editor" + ".dll"; } }
+    private string EditorDllPath { get { return _path + "/" + _name + ".Editor" + ".dll"; } }
 
     public DLLBuilder(string path, string name, ScriptsList list, References refs, Defines defs, bool buildEditor)
     {
@@ -36,19 +36,26 @@ public class DLLBuilder
             return false;
 
         var compilerParams = PrepareCompileParams(editor);
-        var provider = new CSharpCodeProvider(new Dictionary<string, string> { { "CompilerVersion", "v3.0" } });
+        var provider = new CSharpCodeProvider();
         var sources = editor ? _editorSources : _sources;
-
         compilerParams.OutputAssembly = editor ? EditorDllPath : MainDllPAth;
+
         var results = provider.CompileAssemblyFromFile(compilerParams, sources);
 
         if (results.Errors.Count > 0)
         {
             Debug.LogError("Error when creating " + _name + " dll");
-            foreach (var error in results.Errors)
+            //foreach (var error in results.Errors)
+            //{
+            //    Debug.Log(error.ToString());
+            //}
+
+            foreach (var s in results.Output)
             {
-                Debug.Log(error.ToString());
+                Debug.Log(s);
             }
+
+            Debug.Log(results.Output);
             return false;
         }
         return true;
@@ -57,7 +64,6 @@ public class DLLBuilder
     private CompilerParameters PrepareCompileParams(bool isEditor)
     {
         var compilerParams = new CompilerParameters();
-        compilerParams.ReferencedAssemblies.Add("System.dll");
         foreach (var file in _references.Files)
         {
             if(!isEditor && file.Name.Contains("Editor"))
@@ -68,7 +74,7 @@ public class DLLBuilder
         {
             if (File.Exists(MainDllPAth))
             {
-                compilerParams.ReferencedAssemblies.Add(MainDllPAth);
+                compilerParams.ReferencedAssemblies.Add( PathUtils.UnixToWindowsPath(MainDllPAth));
             }
         }
 
